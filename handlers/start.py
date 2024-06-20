@@ -3,7 +3,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
-
+from bot import database
 
 start_router = Router()
 
@@ -20,22 +20,22 @@ class ReviewStates(StatesGroup):
 @start_router.message(Command("start"))
 async def start_handler(message: types.Message):
     kb = types.InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    types.InlineKeyboardButton(text="Наш инстаграм", url="https://www.instagram.com/ya_booblik/")
-                ],
-                [
-                    types.InlineKeyboardButton(text="О нас", callback_data="about"),
-                    types.InlineKeyboardButton(text="Наш адрес", callback_data="address")
-                ],
-                [
-                    types.InlineKeyboardButton(text="Наше меню", callback_data="menu")
-                ],
-                [
-                    types.InlineKeyboardButton(text="Оставить отзыв", callback_data="review")
-                ]
+        inline_keyboard=[
+            [
+                types.InlineKeyboardButton(text="Наш инстаграм", url="https://www.instagram.com/ya_booblik/")
+            ],
+            [
+                types.InlineKeyboardButton(text="О нас", callback_data="about"),
+                types.InlineKeyboardButton(text="Наш адрес", callback_data="address")
+            ],
+            [
+                types.InlineKeyboardButton(text="Наше меню", callback_data="menu")
+            ],
+            [
+                types.InlineKeyboardButton(text="Оставить отзыв", callback_data="review")
             ]
-        )
+        ]
+    )
 
     name = message.from_user.first_name
     await message.answer(
@@ -46,7 +46,8 @@ async def start_handler(message: types.Message):
 
 @start_router.callback_query(F.data == "about")
 async def about_handler(callback: types.CallbackQuery):
-    await callback.message.answer("«Бублик» — небольшое уютное заведение, открывшееся в центре Бишкека. Новое место, в первую очередь, отличает подход к кофейной обжарке, здесь это делается на основе зерен Starbucks.")
+    await callback.message.answer(
+        "«Бублик» — небольшое уютное заведение, открывшееся в центре Бишкека. Новое место, в первую очередь, отличает подход к кофейной обжарке, здесь это делается на основе зерен Starbucks.")
 
 
 @start_router.callback_query(F.data == "address")
@@ -59,9 +60,9 @@ async def menu_handler(callback: types.CallbackQuery):
     kb = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text = "Первые блюда"),
-                KeyboardButton(text = "Напитки"),
-                KeyboardButton(text = "Десерты")
+                KeyboardButton(text="Первые блюда"),
+                KeyboardButton(text="Напитки"),
+                KeyboardButton(text="Десерты")
             ]
         ]
     )
@@ -83,9 +84,10 @@ async def desserts_handler(message: types.Message):
     await message.answer("Десерты:\n\n1. Торт - 250 сом\n2. Мороженое - 100 сом\n")
 
 
+@start_router.message(Command("review"))
 @start_router.callback_query(F.data == "review")
 async def review_handler(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(ReviewStates.name) 
+    await state.set_state(ReviewStates.name)
     await callback.message.answer("Вы можете остановить в любой момент написав 'стоп'")
     await callback.message.answer("Как Вас зовут?")
 
@@ -120,11 +122,11 @@ async def process_date(message: types.Message, state: FSMContext):
     kb = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text = "1"),
-                KeyboardButton(text = "2"),
-                KeyboardButton(text = "3"),
-                KeyboardButton(text = "4"),
-                KeyboardButton(text = "5")
+                KeyboardButton(text="1"),
+                KeyboardButton(text="2"),
+                KeyboardButton(text="3"),
+                KeyboardButton(text="4"),
+                KeyboardButton(text="5")
             ]
         ]
     )
@@ -141,11 +143,11 @@ async def process_food_quality(message: types.Message, state: FSMContext):
     kb = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text = "1"),
-                KeyboardButton(text = "2"),
-                KeyboardButton(text = "3"),
-                KeyboardButton(text = "4"),
-                KeyboardButton(text = "5")
+                KeyboardButton(text="1"),
+                KeyboardButton(text="2"),
+                KeyboardButton(text="3"),
+                KeyboardButton(text="4"),
+                KeyboardButton(text="5")
             ]
         ]
     )
@@ -166,6 +168,13 @@ async def process_cleanliness(message: types.Message, state: FSMContext):
 @start_router.message(ReviewStates.comment)
 async def process_comment(message: types.Message, state: FSMContext):
     await state.update_data(comment=message.text)
-    await message.answer("Спасибо за ваш отзыв!")
     data = await state.get_data()
     print(data)
+    await database.execute("""
+        INSERT INTO review_results (name, contact, date, food_quality, cleanliness, comment) 
+        VALUES (?, ?, ?, ?, ?, ?)""",
+                           (data['name'], data['contact'], data['date'], data['food_quality'], data['cleanliness'],
+                            data['comment'])
+                           )
+    await state.clear()
+    await message.answer("Спасибо за ваш отзыв!")

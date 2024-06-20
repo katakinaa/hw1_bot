@@ -1,17 +1,27 @@
 import asyncio
 import logging
+from aiogram import types
+from bot import dp, bot, database
+from handlers import (
+    start_router,
+    myinfo_router,
+    random_router
+)
 
 
-from bot import dp, bot
-from handlers.start import start_router
-from handlers.myinfo import myinfo_router
-from handlers.random import random_router
+async def on_startup(bot):
+    await database.create_tables()
 
 
 async def main():
+    await bot.set_my_commands([
+        types.BotCommand(command="start", description="Начало")
+    ])
+
     dp.include_router(start_router)
     dp.include_router(random_router)
     dp.include_router(myinfo_router)
+    dp.startup.register(on_startup)
     
     await dp.start_polling(bot)
 

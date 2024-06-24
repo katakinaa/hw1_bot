@@ -1,6 +1,6 @@
 from aiogram import Router, types, F
 from aiogram.filters.command import Command
-import sqlite3
+from bot import database
 
 
 menu_dishes_router = Router()
@@ -34,10 +34,16 @@ categories = ("напитки", "первые блюда", "вторые блю�
 async def show_dishes(message: types.Message):
     kb = types.ReplyKeyboardRemove()
 
-    category = message.text
-    connection = sqlite3.connect("db.sqlite")
-    cursor = connection.cursor()
-    query = cursor.execute("SELECT * FROM dishes WHERE category_id = 1")
-    dishes = query.fetchall()
-    print(dishes)
-    await message.answer(f"Блюда из категории {category} ", reply_markup=kb)
+    category = message.text.capitalize()
+    dishes = await database.fetch("""
+            SELECT * FROM dishes 
+            INNER JOIN categories ON dishes.category_id = categories.id
+            WHERE categories.name = ?
+        """, (category,))
+    await message.answer(f"Блюда из категории {category}", reply_markup=kb)
+    for dish in dishes:
+        photo = types.FSInputFile(dish["image"])
+        await message.answer_photo(
+            photo=photo,
+            caption=f"{dish['name']} - {dish['price']} сом"
+        )

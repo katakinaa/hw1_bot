@@ -7,7 +7,8 @@ from handlers import (
     start_router,
     myinfo_router,
     random_router,
-    review_router
+    review_router,
+    menu_dishes_router
 )
 
 
@@ -19,13 +20,15 @@ async def main():
     await bot.set_my_commands([
         types.BotCommand(command="start", description="Начало"),
         types.BotCommand(command="review", description="Оставьте отзыв"),
-        types.BotCommand(command="myinfo", description="Информация о вас")
+        types.BotCommand(command="myinfo", description="Информация о вас"),
+        types.BotCommand(command="menu", description="Меню")
     ])
 
     dp.include_router(start_router)
     dp.include_router(random_router)
     dp.include_router(myinfo_router)
     dp.include_router(review_router)
+    dp.include_router(menu_dishes_router)
     dp.startup.register(on_startup)
     
     await dp.start_polling(bot)

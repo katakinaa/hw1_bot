@@ -9,11 +9,9 @@ kb_1 = types.InlineKeyboardMarkup(
             [
                 types.InlineKeyboardButton(text="О нас", callback_data="about"),
                 types.InlineKeyboardButton(text="Наш адрес", callback_data="address")
-            ],
-            [
-                types.InlineKeyboardButton(text="Наше меню", callback_data="menu")
             ]
-        ]
+        ],
+        resize_keyboard=True
     )
 
 
@@ -24,5 +22,6 @@ kb_2 = types.ReplyKeyboardMarkup(
                 types.KeyboardButton(text="Напитки"),
                 types.KeyboardButton(text="Десерты")
             ]
-        ]
+        ],
+        resize_keyboard=True
     )

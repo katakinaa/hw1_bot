@@ -10,5 +10,6 @@ kb = ReplyKeyboardMarkup(
                 KeyboardButton(text="4"),
                 KeyboardButton(text="5")
             ]
-        ]
+        ],
+        resize_keyboard=True
     )

@@ -80,7 +80,6 @@ async def process_cleanliness(message: types.Message, state: FSMContext):
 async def process_comment(message: types.Message, state: FSMContext):
     await state.update_data(comment=message.text)
     data = await state.get_data()
-    print(data)
     await database.execute("""
         INSERT INTO review_results (name, contact, date, food_quality, cleanliness, comment) 
         VALUES (?, ?, ?, ?, ?, ?)""",

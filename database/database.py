@@ -22,9 +22,13 @@ class Database:
             await conn.execute(query, params)
             await conn.commit()
 
-    async def fetch(self, query: str, params: tuple = ()):
+    async def fetch(self, query: str, params: tuple = (), fetch_type: str = "all"):
         async with aiosqlite.connect(self.path) as conn:
             conn.row_factory = aiosqlite.Row
             data = await conn.execute(query, params)
-            result = await data.fetchall()
-            return [dict(row) for row in result]
+            if fetch_type == "one":
+                result = await data.fetchone()
+                return dict(result)
+            else:
+                result = await data.fetchall()
+                return [dict(row) for row in result]

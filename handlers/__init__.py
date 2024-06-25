@@ -3,3 +3,4 @@ from .myinfo import myinfo_router
 from .random import random_router
 from .review import review_router
 from .menu_dishes import menu_dishes_router
+from .housekg import house_router

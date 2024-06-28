@@ -11,7 +11,7 @@ def get_page():
 
 def get_links(page):
     selector = Selector(text=page)
-    links = selector.css("div.category-block-content-item a::attr(href)").getall()
+    links = selector.css("div.listings-wrapper a::attr(href)").getall()
     return list(map(lambda x: "https://www.house.kg" + x, links))
 
 
